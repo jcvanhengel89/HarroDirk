@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dirk: Worms Edition Cheats</title>
+    <title>Dirk: Worms Edition Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Modern Tech Font -->
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #051005, #020502); /* Diep donkergroen/zwart */
+            background: linear-gradient(to bottom, #051005, #020502);
             touch-action: none;
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
@@ -20,9 +19,9 @@
         }
         canvas {
             display: block;
+            touch-action: none; /* Belangrijk voor canvas */
         }
         
-        /* Landscape Enforcer Overlay */
         #rotate-message {
             display: none;
             position: fixed;
@@ -77,7 +76,7 @@
             margin-top: 4px;
         }
         
-        /* Screens */
+        /* Screens z-index hoger dan UI */
         #start-screen, #game-over-screen, #victory-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -86,8 +85,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            pointer-events: auto;
-            z-index: 20;
+            pointer-events: auto; /* Zorgt dat clicks hier werken */
+            z-index: 50; 
         }
         #game-over-screen, #victory-screen { display: none; }
 
@@ -100,9 +99,6 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
         button {
@@ -122,7 +118,9 @@
             letter-spacing: 2px;
             position: relative;
             overflow: hidden;
+            /* Cruciaal voor iOS responsiveness */
             touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent;
         }
         button:hover {
             transform: translateY(-3px) scale(1.02);
@@ -134,7 +132,6 @@
             box-shadow: 0 5px 15px -5px rgba(22, 163, 74, 0.4);
         }
 
-        /* Menu Button Style */
         .btn-menu {
             background: linear-gradient(135deg, #475569, #334155);
             box-shadow: 0 10px 25px -5px rgba(71, 85, 105, 0.5);
@@ -146,7 +143,6 @@
             box-shadow: 0 20px 30px -10px rgba(71, 85, 105, 0.7);
         }
 
-        /* Cheat Buttons Styling */
         .cheat-btn {
             padding: 10px 20px;
             font-size: 0.9rem;
@@ -161,10 +157,9 @@
             transform: translateY(-2px);
             color: #fff;
         }
-        .cheat-pussy { border-color: #f472b6; color: #fbcfe8; } /* Roze randje */
-        .cheat-extreme { border-color: #ef4444; color: #fca5a5; } /* Rood randje */
+        .cheat-pussy { border-color: #f472b6; color: #fbcfe8; }
+        .cheat-extreme { border-color: #ef4444; color: #fca5a5; }
 
-        /* Scrollable Poem Box */
         .poem-scroll-container {
             background: rgba(15, 25, 15, 0.5);
             border: 1px solid rgba(234, 179, 8, 0.3);
@@ -174,7 +169,7 @@
             color: #fcd34d;
             width: 90%;
             max-width: 700px;
-            max-height: 50vh;
+            max-height: 55vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             font-size: 1.1rem;
@@ -206,7 +201,6 @@
 </head>
 <body>
 
-    <!-- Landscape Warning Overlay -->
     <div id="rotate-message">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -358,7 +352,6 @@ De missie is klaar, Sint gaat er tussenuit.
             playShoot: function() {
                 if (!this.ctx) return;
                 const t = this.ctx.currentTime;
-                
                 const osc = this.ctx.createOscillator();
                 const gain = this.ctx.createGain();
                 osc.type = 'square';
@@ -370,7 +363,6 @@ De missie is klaar, Sint gaat er tussenuit.
                 gain.connect(this.ctx.destination);
                 osc.start();
                 osc.stop(t + 0.35);
-
                 const bufferSize = this.ctx.sampleRate * 0.2;
                 const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
                 const data = buffer.getChannelData(0);
@@ -420,8 +412,9 @@ De missie is klaar, Sint gaat er tussenuit.
         let terrain = [];
         let clouds = [];
 
-        let mouse = { x: 0, y: 0, down: false };
-        let lastPlayedMode = 'normal'; // Track the mode for restarts
+        let mouse = { x: 0, y: 0 };
+        let isAiming = false; // INPUT ISOLATION FLAG
+        let lastPlayedMode = 'normal';
         
         let game = {
             active: false,
@@ -433,27 +426,16 @@ De missie is klaar, Sint gaat er tussenuit.
         };
 
         const dirkQuotes = [
-            "Als je krullen maar goed zitten!", 
-            "Speciale levering: 100% loodvrij!", 
-            "Wacht ff, mijn koffie wordt koud!", 
-            "Boem! Recht in de roos (ongeveer)!",
-            "Zeg maar dag tegen je laklaag!",
-            "Krullenpower!",
-            "Wie bestelde er schroot?",
-            "Tijd voor een permanentje!",
-            "Hoppa! Zo uit de heup!",
-            "Pas op, ik heb mijn bril niet op!"
+            "Als je krullen maar goed zitten!", "Speciale levering: 100% loodvrij!", 
+            "Wacht ff, mijn koffie wordt koud!", "Boem! Recht in de roos (ongeveer)!",
+            "Zeg maar dag tegen je laklaag!", "Krullenpower!",
+            "Wie bestelde er schroot?", "Tijd voor een permanentje!",
+            "Hoppa! Zo uit de heup!", "Pas op, ik heb mijn bril niet op!"
         ];
-        
         const enemyQuotes = [
-            "Zaten je krullen voor je ogen?", 
-            "Dag krullenbol!", 
-            "Jij gaat eraan!", 
-            "Weg met dat permanent!", 
-            "Krullen? Eerder prullen!",
-            "Auw!", 
-            "Ouwe!", 
-            "Dekking!"
+            "Zaten je krullen voor je ogen?", "Dag krullenbol!", 
+            "Jij gaat eraan!", "Weg met dat permanent!", 
+            "Krullen? Eerder prullen!", "Auw!", "Ouwe!", "Dekking!"
         ];
 
         // --- TERRAIN & ENVIRONMENT ---
@@ -463,18 +445,11 @@ De missie is klaar, Sint gaat er tussenuit.
             let noise1 = Math.random() * 0.02;
             let noise2 = Math.random() * 0.05;
             for(let x=0; x<width; x++) {
-                terrain[x] = baseHeight 
-                    + Math.sin(x * 0.005 + noise1) * 80 
-                    + Math.sin(x * 0.015 + noise2) * 40;
+                terrain[x] = baseHeight + Math.sin(x * 0.005 + noise1) * 80 + Math.sin(x * 0.015 + noise2) * 40;
             }
             clouds = [];
             for(let i=0; i<8; i++) {
-                clouds.push({
-                    x: Math.random() * width,
-                    y: Math.random() * (height * 0.4),
-                    w: 60 + Math.random() * 80,
-                    speed: 0.1 + Math.random() * 0.2
-                });
+                clouds.push({ x: Math.random() * width, y: Math.random() * (height * 0.4), w: 60 + Math.random() * 80, speed: 0.1 + Math.random() * 0.2 });
             }
         }
 
@@ -485,9 +460,7 @@ De missie is klaar, Sint gaat er tussenuit.
                 let dx = x - cx;
                 let dy = Math.sqrt(r*r - dx*dx);
                 let circleBottom = cy + dy;
-                if (terrain[x] < circleBottom) {
-                    terrain[x] = circleBottom; 
-                }
+                if (terrain[x] < circleBottom) terrain[x] = circleBottom; 
             }
         }
 
@@ -497,15 +470,9 @@ De missie is klaar, Sint gaat er tussenuit.
                 this.x = x;
                 this.y = terrain[Math.floor(x)];
                 this.isPlayer = isPlayer;
-                
-                // HP Logic: Override if cheat, else default values
-                if (hpOverride !== undefined) {
-                    this.hp = hpOverride;
-                } else {
-                    this.hp = isPlayer ? 101 : 50;
-                }
+                if (hpOverride !== undefined) this.hp = hpOverride;
+                else this.hp = isPlayer ? 101 : 50;
                 this.maxHp = this.hp; 
-                
                 this.angle = isPlayer ? -Math.PI/4 : -Math.PI*0.75;
                 this.quote = null;
                 this.quoteTimer = 0;
@@ -516,14 +483,10 @@ De missie is klaar, Sint gaat er tussenuit.
 
             update(dt) {
                 if (this.hp <= 0) return;
-                
                 let groundY = terrain[Math.floor(this.x)];
                 if (this.y < groundY) this.y += 2;
                 else this.y = groundY;
-
-                if (this.y > height - 15) {
-                    this.y = height - 15;
-                }
+                if (this.y > height - 15) this.y = height - 15;
 
                 if (!this.canShoot) {
                     this.reloadTimer += dt;
@@ -532,13 +495,9 @@ De missie is klaar, Sint gaat er tussenuit.
                         this.reloadTimer = 0;
                     }
                 }
-
                 if (!this.isPlayer && game.active) {
-                    if (this.canShoot && Math.random() < 0.01) {
-                        this.shootAI();
-                    }
+                    if (this.canShoot && Math.random() < 0.01) this.shootAI();
                 }
-
                 if (this.quoteTimer > 0) this.quoteTimer -= dt;
             }
 
@@ -563,7 +522,6 @@ De missie is klaar, Sint gaat er tussenuit.
                 }
                 power *= (0.9 + Math.random() * 0.2);
                 power = Math.min(power, 25);
-
                 game.projectiles.push(new Projectile(startX, startY, Math.cos(angle) * power, Math.sin(angle) * power, false));
                 AudioEngine.playShoot();
                 this.canShoot = false; 
@@ -589,7 +547,6 @@ De missie is klaar, Sint gaat er tussenuit.
                 for(let i=-12; i<=12; i+=8) {
                     ctx.beginPath(); ctx.arc(i, 3, 2, 0, Math.PI*2); ctx.fill();
                 }
-
                 ctx.save();
                 ctx.translate(0, -15);
                 let barrelAngle = this.angle;
@@ -607,7 +564,6 @@ De missie is klaar, Sint gaat er tussenuit.
                 ctx.fillStyle = '#111'; 
                 ctx.fillRect(24, -5, 4, 10);
                 ctx.restore();
-
                 if(this.isPlayer) {
                     ctx.fillStyle = '#f0c0a0';
                     ctx.beginPath(); ctx.arc(0, -20, 6, 0, Math.PI*2); ctx.fill();
@@ -619,13 +575,10 @@ De missie is klaar, Sint gaat er tussenuit.
                     ctx.fillStyle = '#522';
                     ctx.beginPath(); ctx.arc(0, -15, 6, Math.PI, 0); ctx.fill();
                 }
-
                 ctx.fillStyle = '#333';
                 ctx.fillRect(-20, -45, 40, 5);
                 ctx.fillStyle = this.isPlayer ? '#22c55e' : '#ef4444';
-                // Health bar calc
                 ctx.fillRect(-19, -44, 38 * (this.hp / this.maxHp), 3);
-
                 if(this.isPlayer) {
                     ctx.fillStyle = '#333';
                     ctx.fillRect(-20, -52, 40, 4);
@@ -639,7 +592,6 @@ De missie is klaar, Sint gaat er tussenuit.
                         ctx.fillText("HERLADEN...", 0, -55);
                     }
                 }
-
                 if(this.quoteTimer > 0 && this.quote) {
                     ctx.font = 'bold 18px Rajdhani';
                     ctx.textAlign = 'center';
@@ -649,7 +601,6 @@ De missie is klaar, Sint gaat er tussenuit.
                     let shiftX = 0;
                     if (this.x - w/2 < 10) shiftX = 10 - (this.x - w/2);
                     else if (this.x + w/2 > width - 10) shiftX = (width - 10) - (this.x + w/2);
-                    
                     ctx.translate(shiftX, -100); 
                     ctx.fillStyle = 'rgba(0,0,0,0.2)';
                     ctx.beginPath(); ctx.roundRect(-w/2 + 2, 2, w, bubbleH, 10); ctx.fill();
@@ -657,12 +608,7 @@ De missie is klaar, Sint gaat er tussenuit.
                     ctx.strokeStyle = '#333';
                     ctx.lineWidth = 2;
                     ctx.beginPath(); ctx.roundRect(-w/2, 0, w, bubbleH, 10); ctx.fill(); ctx.stroke();
-                    
-                    ctx.beginPath(); 
-                    ctx.moveTo(-5, bubbleH); 
-                    ctx.lineTo(-shiftX, bubbleH + 10); 
-                    ctx.lineTo(5, bubbleH); 
-                    ctx.fill(); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(-5, bubbleH); ctx.lineTo(-shiftX, bubbleH + 10); ctx.lineTo(5, bubbleH); ctx.fill(); ctx.stroke();
                     ctx.fillStyle = 'white';
                     ctx.beginPath(); ctx.moveTo(-4, bubbleH); ctx.lineTo(4, bubbleH); ctx.lineTo(0, bubbleH + 1); ctx.fill();
                     ctx.fillStyle = this.isPlayer ? '#15803d' : '#991b1b';
@@ -682,7 +628,6 @@ De missie is klaar, Sint gaat er tussenuit.
                 this.active = true;
                 this.trail = [];
             }
-
             update() {
                 if(game.active && Math.random() > 0.5) {
                     this.trail.push({x: this.x, y: this.y});
@@ -703,7 +648,6 @@ De missie is klaar, Sint gaat er tussenuit.
                         t.hp -= 20;
                         this.explode();
                         if(t.isPlayer) {
-                            // Update UI bar based on max HP (which varies by cheat)
                             let pct = (t.hp / t.maxHp) * 100;
                             document.getElementById('dirk-hp').style.width = pct + '%';
                         }
@@ -715,7 +659,6 @@ De missie is klaar, Sint gaat er tussenuit.
                     }
                 });
             }
-
             explode() {
                 this.active = false;
                 destroyTerrain(this.x, this.y, EXPLOSION_RADIUS);
@@ -731,7 +674,6 @@ De missie is klaar, Sint gaat er tussenuit.
                     });
                 }
             }
-
             draw(ctx) {
                 if(this.trail.length > 1) {
                     ctx.beginPath();
@@ -760,38 +702,25 @@ De missie is klaar, Sint gaat er tussenuit.
         }
         window.addEventListener('resize', resize);
 
-        // --- CORE FUNCTIONS ---
         function initGame(mode) {
             generateTerrain();
             game.projectiles = [];
             game.particles = [];
-            
-            // Save mode for restarts
             lastPlayedMode = mode;
-
-            // Mode Logic
             let dirkHP = 101;
             let enemyHP = 50;
-            
-            if (mode === 'pussy') {
-                enemyHP = 1;
-            } else if (mode === 'extreme') {
-                dirkHP = 1;
-            }
-
+            if (mode === 'pussy') enemyHP = 1;
+            else if (mode === 'extreme') dirkHP = 1;
             game.dirk = new Tank(width * 0.15, true, dirkHP);
             document.getElementById('dirk-hp').style.width = '100%';
-            
             game.enemies = [
                 new Tank(width * 0.7, false, enemyHP),
                 new Tank(width * 0.85, false, enemyHP)
             ];
-            
             game.active = true;
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('victory-screen').style.display = 'none';
-            
             AudioEngine.init();
             game.lastTime = performance.now();
             requestAnimationFrame(loop);
@@ -799,11 +728,8 @@ De missie is klaar, Sint gaat er tussenuit.
 
         function endGame(victory) {
             game.active = false;
-            if(victory) {
-                document.getElementById('victory-screen').style.display = 'flex';
-            } else {
-                document.getElementById('game-over-screen').style.display = 'flex';
-            }
+            if(victory) document.getElementById('victory-screen').style.display = 'flex';
+            else document.getElementById('game-over-screen').style.display = 'flex';
         }
 
         function goToMenu() {
@@ -813,32 +739,6 @@ De missie is klaar, Sint gaat er tussenuit.
             document.getElementById('start-screen').style.display = 'flex';
         }
 
-        // --- UNIFIED INPUT HANDLING ---
-        function updateAim(x, y) {
-            mouse.x = x;
-            mouse.y = y;
-        }
-
-        function fire() {
-            if(!game.active) return;
-            if(!game.dirk || !game.dirk.canShoot) return;
-            
-            let startX = game.dirk.x;
-            let startY = game.dirk.y - 15;
-            let dx = mouse.x - startX;
-            let dy = mouse.y - startY;
-            let angle = Math.atan2(dy, dx);
-            let dist = Math.sqrt(dx*dx + dy*dy);
-            let power = Math.min(dist * 0.15, 25);
-
-            game.projectiles.push(new Projectile(startX, startY, Math.cos(angle)*power, Math.sin(angle)*power, true));
-            AudioEngine.playShoot();
-
-            game.dirk.canShoot = false; 
-            game.dirk.say(dirkQuotes[Math.floor(Math.random() * dirkQuotes.length)]);
-        }
-
-        // --- DRAWING FUNCTIONS ---
         function drawEnvironment() {
             let grad = ctx.createLinearGradient(0, 0, 0, height);
             grad.addColorStop(0, '#4aa3df'); 
@@ -883,6 +783,10 @@ De missie is klaar, Sint gaat er tussenuit.
 
         function drawTrajectory() {
             if(!game.active || !game.dirk || !game.dirk.canShoot) return;
+            // Alleen tekenen als we aan het richten zijn OF op desktop
+            // Op mobile is mouse.x alleen geldig tijdens touch
+            if (!isAiming && 'ontouchstart' in window) return;
+
             let startX = game.dirk.x;
             let startY = game.dirk.y - 15;
             let dx = mouse.x - startX;
@@ -915,7 +819,6 @@ De missie is klaar, Sint gaat er tussenuit.
             if(!game.active) return;
             let dt = timestamp - game.lastTime;
             game.lastTime = timestamp;
-            
             drawEnvironment();
             drawTrajectory();
             game.dirk.update(dt);
@@ -946,49 +849,77 @@ De missie is klaar, Sint gaat er tussenuit.
             requestAnimationFrame(loop);
         }
 
-        // Mouse Events
-        document.addEventListener('mousemove', e => updateAim(e.clientX, e.clientY));
-        document.addEventListener('mousedown', (e) => {
-            if(e.target.tagName !== 'BUTTON') {
-                updateAim(e.clientX, e.clientY);
+        // --- ROBUST INPUT HANDLING ---
+        function updateAim(x, y) {
+            mouse.x = x;
+            mouse.y = y;
+        }
+
+        function fire() {
+            if(!game.active) return;
+            if(!game.dirk || !game.dirk.canShoot) return;
+            
+            let startX = game.dirk.x;
+            let startY = game.dirk.y - 15;
+            let dx = mouse.x - startX;
+            let dy = mouse.y - startY;
+            let angle = Math.atan2(dy, dx);
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let power = Math.min(dist * 0.15, 25);
+
+            game.projectiles.push(new Projectile(startX, startY, Math.cos(angle)*power, Math.sin(angle)*power, true));
+            AudioEngine.playShoot();
+
+            game.dirk.canShoot = false; 
+            game.dirk.say(dirkQuotes[Math.floor(Math.random() * dirkQuotes.length)]);
+        }
+
+        // Input Isolation Logic: Only listen to canvas for game, everything else for UI
+        const gameCanvas = document.getElementById('gameCanvas');
+
+        // Mouse (Desktop)
+        gameCanvas.addEventListener('mousedown', e => {
+            isAiming = true;
+            updateAim(e.clientX, e.clientY);
+        });
+        window.addEventListener('mousemove', e => {
+            if(isAiming) updateAim(e.clientX, e.clientY);
+        });
+        window.addEventListener('mouseup', e => {
+            if(isAiming) {
+                isAiming = false;
                 fire();
             }
         });
 
-        // Touch Events
-        document.addEventListener('touchstart', e => {
-            if (e.target.closest('.poem-scroll-container')) return;
-            if(e.target.tagName !== 'BUTTON') {
-                e.preventDefault(); 
+        // Touch (Mobile)
+        gameCanvas.addEventListener('touchstart', e => {
+            e.preventDefault(); // Prevent scrolling on canvas
+            isAiming = true;
+            updateAim(e.touches[0].clientX, e.touches[0].clientY);
+        }, {passive: false});
+
+        window.addEventListener('touchmove', e => {
+            if(isAiming) {
+                // Prevent scrolling if aiming
+                if (e.target === gameCanvas) e.preventDefault();
                 updateAim(e.touches[0].clientX, e.touches[0].clientY);
             }
         }, {passive: false});
 
-        document.addEventListener('touchmove', e => {
-            if (e.target.closest('.poem-scroll-container')) return;
-            if(e.target.tagName !== 'BUTTON') {
-                e.preventDefault();
-                updateAim(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, {passive: false});
-
-        document.addEventListener('touchend', e => {
-            if (e.target.closest('.poem-scroll-container')) return;
-            if(e.target.tagName !== 'BUTTON') {
-                fire(); 
+        window.addEventListener('touchend', e => {
+            if(isAiming) {
+                isAiming = false;
+                fire();
             }
         });
 
-        // Event Listeners
+        // Buttons
         document.getElementById('btn-start').addEventListener('click', () => initGame('normal'));
         document.getElementById('btn-pussy').addEventListener('click', () => initGame('pussy'));
         document.getElementById('btn-extreme').addEventListener('click', () => initGame('extreme'));
-        
-        // Restart restarts the LAST PLAYED mode
         document.getElementById('btn-restart').addEventListener('click', () => initGame(lastPlayedMode));
         document.getElementById('btn-victory').addEventListener('click', () => initGame(lastPlayedMode));
-
-        // Menu buttons
         document.getElementById('btn-menu-fail').addEventListener('click', goToMenu);
         document.getElementById('btn-menu-win').addEventListener('click', goToMenu);
 
