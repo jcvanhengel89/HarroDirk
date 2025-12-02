@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dirk: Worms Edition Final</title>
+    <title>Dirk: Worms Edition Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Modern Tech Font -->
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #051005, #020502); /* Diep donkergroen/zwart */
-            touch-action: none; /* Cruciaal voor iPad: blokkeert standaard gestures */
+            background: linear-gradient(to bottom, #051005, #020502);
+            touch-action: none; /* Standaard geen browser acties */
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
             -webkit-user-select: none;
@@ -21,12 +20,31 @@
         canvas {
             display: block;
         }
+        
+        /* Landscape Enforcer Overlay */
+        #rotate-message {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #4ade80;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        /* Media Query: Als hoogte groter is dan breedte (Portrait) */
+        @media only screen and (orientation: portrait) {
+            #rotate-message { display: flex; }
+            #game-container { display: none; } /* Verberg het spel */
+        }
+
         #ui-layer {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -59,13 +77,9 @@
             margin-top: 4px;
         }
         
-        /* Screens */
         #start-screen, #game-over-screen, #victory-screen {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(3, 8, 3, 0.95);
             display: flex;
             flex-direction: column;
@@ -74,15 +88,13 @@
             pointer-events: auto;
             z-index: 20;
         }
-        #game-over-screen, #victory-screen {
-            display: none;
-        }
+        #game-over-screen, #victory-screen { display: none; }
 
         .card {
             background: rgba(25, 40, 30, 0.6);
             border: 1px solid rgba(74, 222, 128, 0.2);
             border-radius: 32px;
-            padding: 40px;
+            padding: 30px;
             max-width: 600px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
@@ -93,20 +105,19 @@
             background: linear-gradient(135deg, #16a34a, #15803d);
             color: white;
             border: none;
-            padding: 18px 48px;
-            font-size: 1.5rem;
+            padding: 15px 40px;
+            font-size: 1.3rem;
             cursor: pointer;
             text-transform: uppercase;
             font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 30px;
+            margin-top: 20px;
             border-radius: 9999px;
             box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.5);
             letter-spacing: 2px;
             position: relative;
             overflow: hidden;
-            /* Zorgt dat buttons goed reageren op touch */
             touch-action: manipulation; 
         }
         button:hover {
@@ -119,110 +130,106 @@
             box-shadow: 0 5px 15px -5px rgba(22, 163, 74, 0.4);
         }
 
-        /* Scrollable Poem Box */
+        /* Scrollable Poem Box - Verbeterd voor Touch */
         .poem-scroll-container {
             background: rgba(15, 25, 15, 0.5);
             border: 1px solid rgba(234, 179, 8, 0.3);
-            padding: 30px;
-            margin-top: 20px;
+            padding: 25px;
+            margin-top: 15px;
             text-align: left;
             color: #fcd34d;
             width: 90%;
-            max-width: 600px;
-            max-height: 50vh;
-            overflow-y: auto;
-            font-size: 1.2rem;
-            line-height: 1.7;
+            max-width: 700px; /* Iets breder voor iPad */
+            max-height: 55vh; /* Max hoogte */
+            overflow-y: auto; /* Scrollbaar */
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling iOS */
+            font-size: 1.1rem;
+            line-height: 1.6;
             border-radius: 24px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
             white-space: pre-wrap;
             font-family: 'Rajdhani', sans-serif; 
             font-weight: 600;
-            -webkit-overflow-scrolling: touch; /* Soepel scrollen op iPad */
+            /* Zorgt dat touch events hier wél werken */
+            touch-action: pan-y; 
+            pointer-events: auto;
         }
         
-        .poem-scroll-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        .poem-scroll-container::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.2);
-            margin: 10px 0;
-            border-radius: 4px;
-        }
-        .poem-scroll-container::-webkit-scrollbar-thumb {
-            background: #15803d;
-            border-radius: 4px;
-        }
+        .poem-scroll-container::-webkit-scrollbar { width: 8px; }
+        .poem-scroll-container::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); margin: 10px 0; border-radius: 4px; }
+        .poem-scroll-container::-webkit-scrollbar-thumb { background: #15803d; border-radius: 4px; }
 
         .hp-bar-bg {
-            width: 100%; 
-            height: 10px; 
-            background: rgba(0,0,0,0.6); 
-            border-radius: 99px; 
-            overflow: hidden;
-            margin-top: 10px;
+            width: 100%; height: 10px; background: rgba(0,0,0,0.6); 
+            border-radius: 99px; overflow: hidden; margin-top: 10px;
             border: 1px solid rgba(255,255,255,0.1);
         }
         .hp-bar-fill {
-            height: 100%; 
-            background: linear-gradient(90deg, #22c55e, #15803d); 
+            height: 100%; background: linear-gradient(90deg, #22c55e, #15803d); 
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-            border-radius: 99px;
+            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); border-radius: 99px;
         }
     </style>
 </head>
 <body>
 
-    <!-- UI Layer -->
-    <div id="ui-layer">
-        <div class="flex justify-between w-full items-start">
-            <!-- Dirk Stats -->
-            <div class="hud-panel">
-                <div class="hud-text">COMMANDANT DIRK</div>
-                <div class="hp-bar-bg"><div id="dirk-hp" class="hp-bar-fill" style="width: 100%;"></div></div>
-            </div>
-            <!-- Enemy Stats -->
-            <div class="hud-panel text-right">
-                <div class="hud-text" style="color: #f87171;">VIJANDEN</div>
-                <div class="sub-text" id="enemy-count">2 DOELWITTEN</div>
-            </div>
-        </div>
+    <!-- Landscape Warning Overlay -->
+    <div id="rotate-message">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 animate-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+        <h1 class="text-3xl font-bold uppercase tracking-widest mb-2">Draai je apparaat</h1>
+        <p class="text-gray-400">Deze missie vereist een breed scherm (Landscape).</p>
     </div>
 
-    <!-- Start Screen -->
-    <div id="start-screen">
-        <div class="card">
-            <h1 class="text-6xl text-green-400 font-bold mb-2 tracking-widest uppercase drop-shadow-lg">Artillery Dirk</h1>
-            <h2 class="text-xl text-green-700 font-bold mb-8 uppercase tracking-widest">Worms Edition</h2>
+    <div id="game-container">
+        <!-- UI Layer -->
+        <div id="ui-layer">
+            <div class="flex justify-between w-full items-start">
+                <div class="hud-panel">
+                    <div class="hud-text">COMMANDANT DIRK</div>
+                    <div class="hp-bar-bg"><div id="dirk-hp" class="hp-bar-fill" style="width: 100%;"></div></div>
+                </div>
+                <div class="hud-panel text-right">
+                    <div class="hud-text" style="color: #f87171;">VIJANDEN</div>
+                    <div class="sub-text" id="enemy-count">2 DOELWITTEN</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="start-screen">
+            <div class="card">
+                <h1 class="text-5xl md:text-6xl text-green-400 font-bold mb-2 tracking-widest uppercase drop-shadow-lg">Artillery Dirk</h1>
+                <h2 class="text-lg md:text-xl text-green-700 font-bold mb-8 uppercase tracking-widest">Worms Edition</h2>
+                
+                <div class="text-gray-300 mb-6 text-lg space-y-2">
+                    <p><span class="text-green-400 font-bold">SLEEP</span> om te richten</p>
+                    <p>Laat los om te <span class="text-green-400 font-bold">VUREN</span></p>
+                    <p>Vernietig tanks & landschap</p>
+                </div>
+                <p class="text-gray-500 text-sm italic font-mono bg-black/20 py-2 px-4 rounded-full inline-block">Reload tijd: 4 seconden</p>
+                
+                <div>
+                    <button id="btn-start">Start Missie</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div id="game-over-screen">
+            <div class="card">
+                <h1 class="text-6xl text-red-500 font-bold mb-4 uppercase">Missie Mislukt</h1>
+                <p class="text-gray-300 text-xl mb-6">Dirk heeft even rust nodig.</p>
+                <button id="btn-restart" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);">Hergroeperen</button>
+            </div>
+        </div>
+
+        <!-- Victory -->
+        <div id="victory-screen">
+            <h1 class="text-4xl md:text-6xl text-green-400 font-bold mb-4 text-center uppercase drop-shadow-xl">Missie Volbracht</h1>
             
-            <div class="text-gray-300 mb-6 text-lg space-y-2">
-                <p><span class="text-green-400 font-bold">SLEEP</span> om te richten</p>
-                <p>Laat los om te <span class="text-green-400 font-bold">VUREN</span></p>
-                <p>Vernietig tanks & landschap</p>
-            </div>
-            <p class="text-gray-500 text-sm italic font-mono bg-black/20 py-2 px-4 rounded-full inline-block">Reload tijd: 4 seconden</p>
-            
-            <div>
-                <button id="btn-start">Start Missie</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Game Over -->
-    <div id="game-over-screen">
-        <div class="card">
-            <h1 class="text-6xl text-red-500 font-bold mb-4 uppercase">Missie Mislukt</h1>
-            <p class="text-gray-300 text-xl mb-6">Dirk heeft even rust nodig.</p>
-            <button id="btn-restart" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);">Hergroeperen</button>
-        </div>
-    </div>
-
-    <!-- Victory -->
-    <div id="victory-screen">
-        <h1 class="text-5xl md:text-7xl text-green-400 font-bold mb-6 text-center uppercase drop-shadow-xl">Missie Volbracht</h1>
-        
-        <div class="poem-scroll-container">
+            <div class="poem-scroll-container">
 Doelwit geraakt, missie volbracht.
 
 Sint is jouw digitale verleden niet vergeten, 
@@ -284,12 +291,13 @@ Zodat je veilig weer voor de deur kunt staan.
 
 Geniet van je munitie, je vest en de buit,
 De missie is klaar, Sint gaat er tussenuit.
+            </div>
+
+            <button id="btn-victory">Nog een ronde</button>
         </div>
 
-        <button id="btn-victory">Nog een ronde</button>
+        <canvas id="gameCanvas"></canvas>
     </div>
-
-    <canvas id="gameCanvas"></canvas>
 
     <script>
         // --- AUDIO ENGINE ---
@@ -826,7 +834,6 @@ De missie is klaar, Sint gaat er tussenuit.
             requestAnimationFrame(loop);
         }
 
-        // --- UNIFIED INPUT HANDLING FOR DESKTOP & TOUCH ---
         function updateAim(x, y) {
             mouse.x = x;
             mouse.y = y;
@@ -855,21 +862,25 @@ De missie is klaar, Sint gaat er tussenuit.
         document.addEventListener('mousemove', e => updateAim(e.clientX, e.clientY));
         document.addEventListener('mousedown', (e) => {
             if(e.target.tagName !== 'BUTTON') {
-                // Alleen vuren op mouse down (click)
                 updateAim(e.clientX, e.clientY);
                 fire();
             }
         });
 
-        // Touch Events (iPad Support)
+        // Touch Events Fix
         document.addEventListener('touchstart', e => {
+            // Check of we in het gedicht zitten, zo ja: laat scrollen toe
+            if (e.target.closest('.poem-scroll-container')) return;
+
             if(e.target.tagName !== 'BUTTON') {
-                e.preventDefault(); // Voorkom scrollen
+                e.preventDefault(); 
                 updateAim(e.touches[0].clientX, e.touches[0].clientY);
             }
         }, {passive: false});
 
         document.addEventListener('touchmove', e => {
+            if (e.target.closest('.poem-scroll-container')) return;
+
             if(e.target.tagName !== 'BUTTON') {
                 e.preventDefault();
                 updateAim(e.touches[0].clientX, e.touches[0].clientY);
@@ -877,8 +888,10 @@ De missie is klaar, Sint gaat er tussenuit.
         }, {passive: false});
 
         document.addEventListener('touchend', e => {
+            if (e.target.closest('.poem-scroll-container')) return;
+
             if(e.target.tagName !== 'BUTTON') {
-                fire(); // Vuur als vinger wordt opgetild
+                fire(); 
             }
         });
 
