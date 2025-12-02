@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dirk: Worms Edition Mobile</title>
+    <title>Dirk: Worms Edition Cheats</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Modern Tech Font -->
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background: linear-gradient(to bottom, #051005, #020502);
-            touch-action: none; /* Standaard geen browser acties */
+            background: linear-gradient(to bottom, #051005, #020502); /* Diep donkergroen/zwart */
+            touch-action: none;
             font-family: 'Rajdhani', sans-serif;
             user-select: none;
             -webkit-user-select: none;
@@ -36,10 +37,9 @@
             padding: 20px;
         }
         
-        /* Media Query: Als hoogte groter is dan breedte (Portrait) */
         @media only screen and (orientation: portrait) {
             #rotate-message { display: flex; }
-            #game-container { display: none; } /* Verberg het spel */
+            #game-container { display: none; } 
         }
 
         #ui-layer {
@@ -77,6 +77,7 @@
             margin-top: 4px;
         }
         
+        /* Screens */
         #start-screen, #game-over-screen, #victory-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -130,7 +131,25 @@
             box-shadow: 0 5px 15px -5px rgba(22, 163, 74, 0.4);
         }
 
-        /* Scrollable Poem Box - Verbeterd voor Touch */
+        /* Cheat Buttons Styling */
+        .cheat-btn {
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            margin: 10px 5px 0 5px;
+            box-shadow: none;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #aaa;
+        }
+        .cheat-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            color: #fff;
+        }
+        .cheat-pussy { border-color: #f472b6; color: #fbcfe8; } /* Roze randje */
+        .cheat-extreme { border-color: #ef4444; color: #fca5a5; } /* Rood randje */
+
+        /* Scrollable Poem Box */
         .poem-scroll-container {
             background: rgba(15, 25, 15, 0.5);
             border: 1px solid rgba(234, 179, 8, 0.3);
@@ -139,10 +158,10 @@
             text-align: left;
             color: #fcd34d;
             width: 90%;
-            max-width: 700px; /* Iets breder voor iPad */
-            max-height: 55vh; /* Max hoogte */
-            overflow-y: auto; /* Scrollbaar */
-            -webkit-overflow-scrolling: touch; /* Smooth scrolling iOS */
+            max-width: 700px;
+            max-height: 55vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             font-size: 1.1rem;
             line-height: 1.6;
             border-radius: 24px;
@@ -150,7 +169,6 @@
             white-space: pre-wrap;
             font-family: 'Rajdhani', sans-serif; 
             font-weight: 600;
-            /* Zorgt dat touch events hier wél werken */
             touch-action: pan-y; 
             pointer-events: auto;
         }
@@ -210,8 +228,13 @@
                 </div>
                 <p class="text-gray-500 text-sm italic font-mono bg-black/20 py-2 px-4 rounded-full inline-block">Reload tijd: 4 seconden</p>
                 
-                <div>
+                <div class="flex flex-col items-center">
                     <button id="btn-start">Start Missie</button>
+                    
+                    <div class="flex mt-4 space-x-2">
+                        <button id="btn-pussy" class="cheat-btn cheat-pussy">🛡️ Pussy Mode</button>
+                        <button id="btn-extreme" class="cheat-btn cheat-extreme">💀 Extreme Mode</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -447,12 +470,19 @@ De missie is klaar, Sint gaat er tussenuit.
 
         // --- CLASSES ---
         class Tank {
-            constructor(x, isPlayer) {
+            constructor(x, isPlayer, hpOverride) {
                 this.x = x;
                 this.y = terrain[Math.floor(x)];
                 this.isPlayer = isPlayer;
-                this.hp = isPlayer ? 101 : 50;
-                this.maxHp = this.hp;
+                
+                // HP Logic: Override if cheat, else default values
+                if (hpOverride !== undefined) {
+                    this.hp = hpOverride;
+                } else {
+                    this.hp = isPlayer ? 101 : 50;
+                }
+                this.maxHp = this.hp; 
+                
                 this.angle = isPlayer ? -Math.PI/4 : -Math.PI*0.75;
                 this.quote = null;
                 this.quoteTimer = 0;
@@ -570,6 +600,7 @@ De missie is klaar, Sint gaat er tussenuit.
                 ctx.fillStyle = '#333';
                 ctx.fillRect(-20, -45, 40, 5);
                 ctx.fillStyle = this.isPlayer ? '#22c55e' : '#ef4444';
+                // Health bar calc
                 ctx.fillRect(-19, -44, 38 * (this.hp / this.maxHp), 3);
 
                 if(this.isPlayer) {
@@ -648,7 +679,11 @@ De missie is klaar, Sint gaat er tussenuit.
                     if(t.hp > 0 && Math.abs(this.x - t.x) < 25 && Math.abs(this.y - (t.y - 10)) < 25) {
                         t.hp -= 20;
                         this.explode();
-                        if(t.isPlayer) document.getElementById('dirk-hp').style.width = (t.hp / 1.01) + '%';
+                        if(t.isPlayer) {
+                            // Update UI bar based on max HP (which varies by cheat)
+                            let pct = (t.hp / t.maxHp) * 100;
+                            document.getElementById('dirk-hp').style.width = pct + '%';
+                        }
                         if(t.hp <= 0 && !t.isPlayer) {
                             if(game.enemies.filter(e => e.hp > 0).length === 0) endGame(true);
                         } else if (t.hp <= 0 && t.isPlayer) {
@@ -702,75 +737,16 @@ De missie is klaar, Sint gaat er tussenuit.
         }
         window.addEventListener('resize', resize);
 
-        function initGame() {
-            generateTerrain();
-            game.projectiles = [];
-            game.particles = [];
-            game.dirk = new Tank(width * 0.15, true);
-            document.getElementById('dirk-hp').style.width = '100%';
-            game.enemies = [
-                new Tank(width * 0.7, false),
-                new Tank(width * 0.85, false)
-            ];
-            game.active = true;
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-over-screen').style.display = 'none';
-            document.getElementById('victory-screen').style.display = 'none';
-            AudioEngine.init();
-            game.lastTime = performance.now();
-            requestAnimationFrame(loop);
+        // --- UNIFIED INPUT HANDLING ---
+        function updateAim(x, y) {
+            mouse.x = x;
+            mouse.y = y;
         }
 
-        function endGame(victory) {
-            game.active = false;
-            if(victory) document.getElementById('victory-screen').style.display = 'flex';
-            else document.getElementById('game-over-screen').style.display = 'flex';
-        }
-
-        function drawEnvironment() {
-            let grad = ctx.createLinearGradient(0, 0, 0, height);
-            grad.addColorStop(0, '#4aa3df'); 
-            grad.addColorStop(1, '#87CEEB'); 
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, width, height);
-            let sunGrad = ctx.createRadialGradient(width-80, 80, 10, width-80, 80, 60);
-            sunGrad.addColorStop(0, '#ffffcc');
-            sunGrad.addColorStop(1, 'rgba(255,255,200,0)');
-            ctx.fillStyle = sunGrad;
-            ctx.beginPath(); ctx.arc(width-80, 80, 60, 0, Math.PI*2); ctx.fill();
-            ctx.fillStyle = 'rgba(255,255,255,0.7)';
-            clouds.forEach(c => {
-                c.x += c.speed;
-                if(c.x > width + 50) c.x = -100;
-                ctx.beginPath();
-                ctx.arc(c.x, c.y, c.w * 0.3, 0, Math.PI*2);
-                ctx.arc(c.x + c.w * 0.2, c.y - c.w*0.1, c.w * 0.35, 0, Math.PI*2);
-                ctx.arc(c.x + c.w * 0.5, c.y, c.w * 0.25, 0, Math.PI*2);
-                ctx.fill();
-            });
-            let groundGrad = ctx.createLinearGradient(0, 0, 0, height);
-            groundGrad.addColorStop(0, '#5d7e32'); 
-            groundGrad.addColorStop(1, '#3b2912'); 
-            ctx.fillStyle = groundGrad;
-            ctx.beginPath();
-            ctx.moveTo(0, height);
-            for(let x=0; x<width; x++) {
-                ctx.lineTo(x, terrain[x]);
-            }
-            ctx.lineTo(width, height);
-            ctx.fill();
-            ctx.strokeStyle = '#7ec850';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            for(let x=0; x<width; x++) {
-                if (x === 0) ctx.moveTo(x, terrain[x]);
-                else ctx.lineTo(x, terrain[x]);
-            }
-            ctx.stroke();
-        }
-
-        function drawTrajectory() {
-            if(!game.active || !game.dirk || !game.dirk.canShoot) return;
+        function fire() {
+            if(!game.active) return;
+            if(!game.dirk || !game.dirk.canShoot) return;
+            
             let startX = game.dirk.x;
             let startY = game.dirk.y - 15;
             let dx = mouse.x - startX;
@@ -778,81 +754,27 @@ De missie is klaar, Sint gaat er tussenuit.
             let angle = Math.atan2(dy, dx);
             let dist = Math.sqrt(dx*dx + dy*dy);
             let power = Math.min(dist * 0.15, 25);
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-            ctx.setLineDash([4, 6]);
-            ctx.lineWidth = 2;
-            let simX = startX;
-            let simY = startY;
-            let simVx = Math.cos(angle) * power;
-            let simVy = Math.sin(angle) * power;
-            ctx.moveTo(simX, simY);
-            for(let i=0; i<80; i++) { 
-                simX += simVx;
-                simY += simVy;
-                simVy += GRAVITY;
-                ctx.lineTo(simX, simY);
-                if(simX < 0 || simX > width) break;
-                if(terrain[Math.floor(simX)] && simY >= terrain[Math.floor(simX)]) break;
-            }
-            ctx.stroke();
-            ctx.setLineDash([]);
+
+            game.projectiles.push(new Projectile(startX, startY, Math.cos(angle)*power, Math.sin(angle)*power, true));
+            AudioEngine.playShoot();
+
+            game.dirk.canShoot = false; 
+            game.dirk.say(dirkQuotes[Math.floor(Math.random() * dirkQuotes.length)]);
         }
 
-        function loop(timestamp) {
-            if(!game.active) return;
-            let dt = timestamp - game.lastTime;
-            game.lastTime = timestamp;
-            
-            drawEnvironment();
-            drawTrajectory();
-            game.dirk.update(dt);
-            game.dirk.draw(ctx);
-            game.enemies.forEach(e => {
-                e.update(dt);
-                e.draw(ctx);
-            });
-            let aliveEnemies = game.enemies.filter(e => e.hp > 0).length;
-            document.getElementById('enemy-count').innerText = aliveEnemies + " DOELWITTEN OVER";
-            for(let i = game.projectiles.length-1; i>=0; i--) {
-                let p = game.projectiles[i];
-                p.update();
-                p.draw(ctx);
-                if(!p.active) game.projectiles.splice(i, 1);
-            }
-            for(let i = game.particles.length-1; i>=0; i--) {
-                let p = game.particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.life -= 0.03;
-                ctx.globalAlpha = p.life;
-                ctx.fillStyle = p.color;
-                ctx.beginPath(); ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI*2); ctx.fill();
-                ctx.globalAlpha = 1;
-                if(p.life <= 0) game.particles.splice(i, 1);
-            }
-            requestAnimationFrame(loop);
-        }
-
-        // --- INPUTS ---
-        document.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
+        // Mouse Events
+        document.addEventListener('mousemove', e => updateAim(e.clientX, e.clientY));
         
         document.addEventListener('mousedown', (e) => {
             if(e.target.tagName !== 'BUTTON') {
-                // Alleen vuren op mouse down (click)
                 updateAim(e.clientX, e.clientY);
                 fire();
             }
         });
 
-        // Touch Events Fix
+        // Touch Events
         document.addEventListener('touchstart', e => {
-            // Check of we in het gedicht zitten, zo ja: laat scrollen toe
             if (e.target.closest('.poem-scroll-container')) return;
-
             if(e.target.tagName !== 'BUTTON') {
                 e.preventDefault(); 
                 updateAim(e.touches[0].clientX, e.touches[0].clientY);
@@ -861,7 +783,6 @@ De missie is klaar, Sint gaat er tussenuit.
 
         document.addEventListener('touchmove', e => {
             if (e.target.closest('.poem-scroll-container')) return;
-
             if(e.target.tagName !== 'BUTTON') {
                 e.preventDefault();
                 updateAim(e.touches[0].clientX, e.touches[0].clientY);
@@ -870,15 +791,18 @@ De missie is klaar, Sint gaat er tussenuit.
 
         document.addEventListener('touchend', e => {
             if (e.target.closest('.poem-scroll-container')) return;
-
             if(e.target.tagName !== 'BUTTON') {
                 fire(); 
             }
         });
 
-        document.getElementById('btn-start').addEventListener('click', initGame);
-        document.getElementById('btn-restart').addEventListener('click', initGame);
-        document.getElementById('btn-victory').addEventListener('click', initGame);
+        // Init Calls with Modes
+        document.getElementById('btn-start').addEventListener('click', () => initGame('normal'));
+        document.getElementById('btn-pussy').addEventListener('click', () => initGame('pussy'));
+        document.getElementById('btn-extreme').addEventListener('click', () => initGame('extreme'));
+        
+        document.getElementById('btn-restart').addEventListener('click', () => initGame('normal'));
+        document.getElementById('btn-victory').addEventListener('click', () => initGame('normal'));
 
         resize();
 
