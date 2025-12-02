@@ -100,6 +100,9 @@
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         button {
@@ -113,7 +116,7 @@
             font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 20px;
+            margin-top: 15px;
             border-radius: 9999px;
             box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.5);
             letter-spacing: 2px;
@@ -129,6 +132,18 @@
         button:active {
             transform: translateY(1px);
             box-shadow: 0 5px 15px -5px rgba(22, 163, 74, 0.4);
+        }
+
+        /* Menu Button Style */
+        .btn-menu {
+            background: linear-gradient(135deg, #475569, #334155);
+            box-shadow: 0 10px 25px -5px rgba(71, 85, 105, 0.5);
+            font-size: 1.1rem;
+            padding: 12px 30px;
+        }
+        .btn-menu:hover {
+            background: linear-gradient(135deg, #64748b, #475569);
+            box-shadow: 0 20px 30px -10px rgba(71, 85, 105, 0.7);
         }
 
         /* Cheat Buttons Styling */
@@ -159,7 +174,7 @@
             color: #fcd34d;
             width: 90%;
             max-width: 700px;
-            max-height: 55vh;
+            max-height: 50vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             font-size: 1.1rem;
@@ -228,10 +243,10 @@
                 </div>
                 <p class="text-gray-500 text-sm italic font-mono bg-black/20 py-2 px-4 rounded-full inline-block">Reload tijd: 4 seconden</p>
                 
-                <div class="flex flex-col items-center">
-                    <button id="btn-start">Start Missie</button>
+                <div class="flex flex-col items-center w-full">
+                    <button id="btn-start" class="w-full md:w-auto">Start Missie</button>
                     
-                    <div class="flex mt-4 space-x-2">
+                    <div class="flex mt-6 space-x-4">
                         <button id="btn-pussy" class="cheat-btn cheat-pussy">🛡️ Pussy Mode</button>
                         <button id="btn-extreme" class="cheat-btn cheat-extreme">💀 Extreme Mode</button>
                     </div>
@@ -244,7 +259,11 @@
             <div class="card">
                 <h1 class="text-6xl text-red-500 font-bold mb-4 uppercase">Missie Mislukt</h1>
                 <p class="text-gray-300 text-xl mb-6">Womp, Womp, Womp... geen kado's dit jaar :(</p>
-                <button id="btn-restart" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);">Grapje, herkansing</button>
+                
+                <div class="flex flex-col gap-2 w-full items-center">
+                    <button id="btn-restart" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);">Grapje, herkansing</button>
+                    <button id="btn-menu-fail" class="btn-menu">Terug naar Basis</button>
+                </div>
             </div>
         </div>
 
@@ -316,7 +335,10 @@ Geniet van je munitie, je vest en de buit,
 De missie is klaar, Sint gaat er tussenuit.
             </div>
 
-            <button id="btn-victory">Nog een ronde</button>
+            <div class="flex flex-col gap-2 mt-4 items-center">
+                <button id="btn-victory">Nog een ronde</button>
+                <button id="btn-menu-win" class="btn-menu">Terug naar Basis</button>
+            </div>
         </div>
 
         <canvas id="gameCanvas"></canvas>
@@ -399,6 +421,7 @@ De missie is klaar, Sint gaat er tussenuit.
         let clouds = [];
 
         let mouse = { x: 0, y: 0, down: false };
+        let lastPlayedMode = 'normal'; // Track the mode for restarts
         
         let game = {
             active: false,
@@ -737,6 +760,59 @@ De missie is klaar, Sint gaat er tussenuit.
         }
         window.addEventListener('resize', resize);
 
+        // --- CORE FUNCTIONS ---
+        function initGame(mode) {
+            generateTerrain();
+            game.projectiles = [];
+            game.particles = [];
+            
+            // Save mode for restarts
+            lastPlayedMode = mode;
+
+            // Mode Logic
+            let dirkHP = 101;
+            let enemyHP = 50;
+            
+            if (mode === 'pussy') {
+                enemyHP = 1;
+            } else if (mode === 'extreme') {
+                dirkHP = 1;
+            }
+
+            game.dirk = new Tank(width * 0.15, true, dirkHP);
+            document.getElementById('dirk-hp').style.width = '100%';
+            
+            game.enemies = [
+                new Tank(width * 0.7, false, enemyHP),
+                new Tank(width * 0.85, false, enemyHP)
+            ];
+            
+            game.active = true;
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('victory-screen').style.display = 'none';
+            
+            AudioEngine.init();
+            game.lastTime = performance.now();
+            requestAnimationFrame(loop);
+        }
+
+        function endGame(victory) {
+            game.active = false;
+            if(victory) {
+                document.getElementById('victory-screen').style.display = 'flex';
+            } else {
+                document.getElementById('game-over-screen').style.display = 'flex';
+            }
+        }
+
+        function goToMenu() {
+            game.active = false;
+            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('victory-screen').style.display = 'none';
+            document.getElementById('start-screen').style.display = 'flex';
+        }
+
         // --- UNIFIED INPUT HANDLING ---
         function updateAim(x, y) {
             mouse.x = x;
@@ -762,9 +838,116 @@ De missie is klaar, Sint gaat er tussenuit.
             game.dirk.say(dirkQuotes[Math.floor(Math.random() * dirkQuotes.length)]);
         }
 
+        // --- DRAWING FUNCTIONS ---
+        function drawEnvironment() {
+            let grad = ctx.createLinearGradient(0, 0, 0, height);
+            grad.addColorStop(0, '#4aa3df'); 
+            grad.addColorStop(1, '#87CEEB'); 
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, width, height);
+            let sunGrad = ctx.createRadialGradient(width-80, 80, 10, width-80, 80, 60);
+            sunGrad.addColorStop(0, '#ffffcc');
+            sunGrad.addColorStop(1, 'rgba(255,255,200,0)');
+            ctx.fillStyle = sunGrad;
+            ctx.beginPath(); ctx.arc(width-80, 80, 60, 0, Math.PI*2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.7)';
+            clouds.forEach(c => {
+                c.x += c.speed;
+                if(c.x > width + 50) c.x = -100;
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, c.w * 0.3, 0, Math.PI*2);
+                ctx.arc(c.x + c.w * 0.2, c.y - c.w*0.1, c.w * 0.35, 0, Math.PI*2);
+                ctx.arc(c.x + c.w * 0.5, c.y, c.w * 0.25, 0, Math.PI*2);
+                ctx.fill();
+            });
+            let groundGrad = ctx.createLinearGradient(0, 0, 0, height);
+            groundGrad.addColorStop(0, '#5d7e32'); 
+            groundGrad.addColorStop(1, '#3b2912'); 
+            ctx.fillStyle = groundGrad;
+            ctx.beginPath();
+            ctx.moveTo(0, height);
+            for(let x=0; x<width; x++) {
+                ctx.lineTo(x, terrain[x]);
+            }
+            ctx.lineTo(width, height);
+            ctx.fill();
+            ctx.strokeStyle = '#7ec850';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            for(let x=0; x<width; x++) {
+                if (x === 0) ctx.moveTo(x, terrain[x]);
+                else ctx.lineTo(x, terrain[x]);
+            }
+            ctx.stroke();
+        }
+
+        function drawTrajectory() {
+            if(!game.active || !game.dirk || !game.dirk.canShoot) return;
+            let startX = game.dirk.x;
+            let startY = game.dirk.y - 15;
+            let dx = mouse.x - startX;
+            let dy = mouse.y - startY;
+            let angle = Math.atan2(dy, dx);
+            let dist = Math.sqrt(dx*dx + dy*dy);
+            let power = Math.min(dist * 0.15, 25);
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.setLineDash([4, 6]);
+            ctx.lineWidth = 2;
+            let simX = startX;
+            let simY = startY;
+            let simVx = Math.cos(angle) * power;
+            let simVy = Math.sin(angle) * power;
+            ctx.moveTo(simX, simY);
+            for(let i=0; i<80; i++) { 
+                simX += simVx;
+                simY += simVy;
+                simVy += GRAVITY;
+                ctx.lineTo(simX, simY);
+                if(simX < 0 || simX > width) break;
+                if(terrain[Math.floor(simX)] && simY >= terrain[Math.floor(simX)]) break;
+            }
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function loop(timestamp) {
+            if(!game.active) return;
+            let dt = timestamp - game.lastTime;
+            game.lastTime = timestamp;
+            
+            drawEnvironment();
+            drawTrajectory();
+            game.dirk.update(dt);
+            game.dirk.draw(ctx);
+            game.enemies.forEach(e => {
+                e.update(dt);
+                e.draw(ctx);
+            });
+            let aliveEnemies = game.enemies.filter(e => e.hp > 0).length;
+            document.getElementById('enemy-count').innerText = aliveEnemies + " DOELWITTEN OVER";
+            for(let i = game.projectiles.length-1; i>=0; i--) {
+                let p = game.projectiles[i];
+                p.update();
+                p.draw(ctx);
+                if(!p.active) game.projectiles.splice(i, 1);
+            }
+            for(let i = game.particles.length-1; i>=0; i--) {
+                let p = game.particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.03;
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.size || 3, 0, Math.PI*2); ctx.fill();
+                ctx.globalAlpha = 1;
+                if(p.life <= 0) game.particles.splice(i, 1);
+            }
+            requestAnimationFrame(loop);
+        }
+
         // Mouse Events
         document.addEventListener('mousemove', e => updateAim(e.clientX, e.clientY));
-        
         document.addEventListener('mousedown', (e) => {
             if(e.target.tagName !== 'BUTTON') {
                 updateAim(e.clientX, e.clientY);
@@ -796,13 +979,18 @@ De missie is klaar, Sint gaat er tussenuit.
             }
         });
 
-        // Init Calls with Modes
+        // Event Listeners
         document.getElementById('btn-start').addEventListener('click', () => initGame('normal'));
         document.getElementById('btn-pussy').addEventListener('click', () => initGame('pussy'));
         document.getElementById('btn-extreme').addEventListener('click', () => initGame('extreme'));
         
-        document.getElementById('btn-restart').addEventListener('click', () => initGame('normal'));
-        document.getElementById('btn-victory').addEventListener('click', () => initGame('normal'));
+        // Restart restarts the LAST PLAYED mode
+        document.getElementById('btn-restart').addEventListener('click', () => initGame(lastPlayedMode));
+        document.getElementById('btn-victory').addEventListener('click', () => initGame(lastPlayedMode));
+
+        // Menu buttons
+        document.getElementById('btn-menu-fail').addEventListener('click', goToMenu);
+        document.getElementById('btn-menu-win').addEventListener('click', goToMenu);
 
         resize();
 
