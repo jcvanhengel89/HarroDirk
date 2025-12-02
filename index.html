@@ -19,7 +19,7 @@
         }
         canvas {
             display: block;
-            touch-action: none; /* Belangrijk voor canvas */
+            touch-action: none;
         }
         
         #rotate-message {
@@ -48,18 +48,18 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            padding: 24px;
+            padding: 20px;
             box-sizing: border-box;
             z-index: 10;
         }
         .hud-panel {
             background: rgba(20, 35, 25, 0.85);
-            padding: 16px 24px;
-            border-radius: 20px;
+            padding: 12px 20px;
+            border-radius: 16px;
             border: 1px solid rgba(74, 222, 128, 0.15);
             backdrop-filter: blur(12px);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            min-width: 220px;
+            min-width: 200px;
         }
         .hud-text {
             color: #86efac;
@@ -67,7 +67,7 @@
             font-weight: 700;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            font-size: 1.25rem;
+            font-size: 1.2rem;
         }
         .sub-text {
             color: #94a3b8;
@@ -76,7 +76,6 @@
             margin-top: 4px;
         }
         
-        /* Screens z-index hoger dan UI */
         #start-screen, #game-over-screen, #victory-screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -85,7 +84,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            pointer-events: auto; /* Zorgt dat clicks hier werken */
+            pointer-events: auto;
             z-index: 50; 
         }
         #game-over-screen, #victory-screen { display: none; }
@@ -94,71 +93,113 @@
             background: rgba(25, 40, 30, 0.6);
             border: 1px solid rgba(74, 222, 128, 0.2);
             border-radius: 32px;
-            padding: 30px;
+            padding: 40px;
             max-width: 600px;
+            width: 90%;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,0.6);
             backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
+        /* Algemene knop stijl */
         button {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 1.3rem;
             cursor: pointer;
             text-transform: uppercase;
             font-family: 'Rajdhani', sans-serif;
             font-weight: 700;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 15px;
             border-radius: 9999px;
-            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.5);
-            letter-spacing: 2px;
             position: relative;
             overflow: hidden;
-            /* Cruciaal voor iOS responsiveness */
-            touch-action: manipulation; 
+            touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
+            z-index: 60;
         }
-        button:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 20px 30px -10px rgba(22, 163, 74, 0.7);
+
+        /* Prominente Start Knop */
+        #btn-start {
             background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            padding: 20px 60px;
+            font-size: 2rem;
+            margin-top: 30px;
+            box-shadow: 0 0 30px rgba(34, 197, 94, 0.6);
+            animation: pulse-green 2s infinite;
+            letter-spacing: 3px;
+            width: 100%;
+            max-width: 400px;
         }
-        button:active {
-            transform: translateY(1px);
-            box-shadow: 0 5px 15px -5px rgba(22, 163, 74, 0.4);
+        #btn-start:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 50px rgba(34, 197, 94, 0.8);
+        }
+        
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
 
-        .btn-menu {
-            background: linear-gradient(135deg, #475569, #334155);
-            box-shadow: 0 10px 25px -5px rgba(71, 85, 105, 0.5);
-            font-size: 1.1rem;
-            padding: 12px 30px;
-        }
-        .btn-menu:hover {
-            background: linear-gradient(135deg, #64748b, #475569);
-            box-shadow: 0 20px 30px -10px rgba(71, 85, 105, 0.7);
-        }
-
+        /* Subtiele Cheat Knoppen */
         .cheat-btn {
-            padding: 10px 20px;
-            font-size: 0.9rem;
-            margin: 10px 5px 0 5px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+            padding: 8px 16px;
+            font-size: 0.8rem;
+            margin: 0 5px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             box-shadow: none;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #aaa;
         }
         .cheat-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-            color: #fff;
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
         }
-        .cheat-pussy { border-color: #f472b6; color: #fbcfe8; }
-        .cheat-extreme { border-color: #ef4444; color: #fca5a5; }
+        .cheat-active { /* Feedback als geklikt wordt, optioneel */
+            border-color: #fff;
+        }
+
+        /* In-game Menu Button */
+        #btn-ingame-menu {
+            pointer-events: auto; /* Belangrijk: UI layer heeft pointer-events: none */
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        #btn-ingame-menu:hover {
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+        }
+
+        /* Overige knoppen (restart etc) */
+        .btn-action {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            margin-top: 15px;
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5);
+        }
+        .btn-menu {
+            background: transparent;
+            border: 1px solid #475569;
+            color: #94a3b8;
+            padding: 10px 30px;
+            font-size: 1rem;
+            margin-top: 10px;
+        }
+        .btn-menu:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+            border-color: #94a3b8;
+        }
 
         .poem-scroll-container {
             background: rgba(15, 25, 15, 0.5);
@@ -167,9 +208,8 @@
             margin-top: 15px;
             text-align: left;
             color: #fcd34d;
-            width: 90%;
-            max-width: 700px;
-            max-height: 55vh;
+            width: 100%;
+            max-height: 50vh;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
             font-size: 1.1rem;
@@ -217,6 +257,10 @@
                     <div class="hud-text">COMMANDANT DIRK</div>
                     <div class="hp-bar-bg"><div id="dirk-hp" class="hp-bar-fill" style="width: 100%;"></div></div>
                 </div>
+                
+                <!-- IN-GAME MENU BUTTON -->
+                <button id="btn-ingame-menu">STOP MISSIE</button>
+
                 <div class="hud-panel text-right">
                     <div class="hud-text" style="color: #f87171;">VIJANDEN</div>
                     <div class="sub-text" id="enemy-count">2 DOELWITTEN</div>
@@ -228,22 +272,21 @@
         <div id="start-screen">
             <div class="card">
                 <h1 class="text-5xl md:text-6xl text-green-400 font-bold mb-2 tracking-widest uppercase drop-shadow-lg">Artillery Dirk</h1>
-                <h2 class="text-lg md:text-xl text-green-700 font-bold mb-8 uppercase tracking-widest">Worms Edition</h2>
+                <h2 class="text-lg md:text-xl text-green-700 font-bold mb-6 uppercase tracking-widest">Worms Edition</h2>
                 
                 <div class="text-gray-300 mb-6 text-lg space-y-2">
                     <p><span class="text-green-400 font-bold">SLEEP</span> om te richten</p>
                     <p>Laat los om te <span class="text-green-400 font-bold">VUREN</span></p>
                     <p>Vernietig tanks & landschap</p>
                 </div>
-                <p class="text-gray-500 text-sm italic font-mono bg-black/20 py-2 px-4 rounded-full inline-block">Reload tijd: 4 seconden</p>
                 
-                <div class="flex flex-col items-center w-full">
-                    <button id="btn-start" class="w-full md:w-auto">Start Missie</button>
-                    
-                    <div class="flex mt-6 space-x-4">
-                        <button id="btn-pussy" class="cheat-btn cheat-pussy">🛡️ Pussy Mode</button>
-                        <button id="btn-extreme" class="cheat-btn cheat-extreme">💀 Extreme Mode</button>
-                    </div>
+                <!-- HUGE Start Button -->
+                <button id="btn-start">START MISSIE</button>
+                
+                <p class="text-gray-500 text-xs italic mt-6 mb-2">Debug Modes (Alleen voor testen):</p>
+                <div class="flex space-x-2">
+                    <button id="btn-pussy" class="cheat-btn">Pussy Mode</button>
+                    <button id="btn-extreme" class="cheat-btn">Extreme Mode</button>
                 </div>
             </div>
         </div>
@@ -255,8 +298,8 @@
                 <p class="text-gray-300 text-xl mb-6">Womp, Womp, Womp... geen kado's dit jaar :(</p>
                 
                 <div class="flex flex-col gap-2 w-full items-center">
-                    <button id="btn-restart" style="background: linear-gradient(135deg, #dc2626, #991b1b); box-shadow: 0 10px 25px -5px rgba(220, 38, 38, 0.5);">Grapje, herkansing</button>
-                    <button id="btn-menu-fail" class="btn-menu">Terug naar Basis</button>
+                    <button id="btn-restart" class="btn-action">Grapje, herkansing</button>
+                    <button id="btn-menu-fail" class="btn-menu">Terug naar Menu</button>
                 </div>
             </div>
         </div>
@@ -329,9 +372,9 @@ Geniet van je munitie, je vest en de buit,
 De missie is klaar, Sint gaat er tussenuit.
             </div>
 
-            <div class="flex flex-col gap-2 mt-4 items-center">
-                <button id="btn-victory">Nog een ronde</button>
-                <button id="btn-menu-win" class="btn-menu">Terug naar Basis</button>
+            <div class="flex flex-col gap-2 mt-4 items-center w-full">
+                <button id="btn-victory" class="btn-action w-full md:w-auto">Nog een ronde</button>
+                <button id="btn-menu-win" class="btn-menu w-full md:w-auto">Terug naar Menu</button>
             </div>
         </div>
 
@@ -413,7 +456,7 @@ De missie is klaar, Sint gaat er tussenuit.
         let clouds = [];
 
         let mouse = { x: 0, y: 0 };
-        let isAiming = false; // INPUT ISOLATION FLAG
+        let isAiming = false; 
         let lastPlayedMode = 'normal';
         
         let game = {
@@ -483,6 +526,7 @@ De missie is klaar, Sint gaat er tussenuit.
 
             update(dt) {
                 if (this.hp <= 0) return;
+                
                 let groundY = terrain[Math.floor(this.x)];
                 if (this.y < groundY) this.y += 2;
                 else this.y = groundY;
@@ -522,6 +566,7 @@ De missie is klaar, Sint gaat er tussenuit.
                 }
                 power *= (0.9 + Math.random() * 0.2);
                 power = Math.min(power, 25);
+
                 game.projectiles.push(new Projectile(startX, startY, Math.cos(angle) * power, Math.sin(angle) * power, false));
                 AudioEngine.playShoot();
                 this.canShoot = false; 
@@ -702,25 +747,36 @@ De missie is klaar, Sint gaat er tussenuit.
         }
         window.addEventListener('resize', resize);
 
+        // --- CORE FUNCTIONS ---
         function initGame(mode) {
             generateTerrain();
             game.projectiles = [];
             game.particles = [];
+            
+            // Mode Logic
             lastPlayedMode = mode;
             let dirkHP = 101;
             let enemyHP = 50;
-            if (mode === 'pussy') enemyHP = 1;
-            else if (mode === 'extreme') dirkHP = 1;
+            
+            if (mode === 'pussy') {
+                enemyHP = 1;
+            } else if (mode === 'extreme') {
+                dirkHP = 1;
+            }
+
             game.dirk = new Tank(width * 0.15, true, dirkHP);
             document.getElementById('dirk-hp').style.width = '100%';
+            
             game.enemies = [
                 new Tank(width * 0.7, false, enemyHP),
                 new Tank(width * 0.85, false, enemyHP)
             ];
+            
             game.active = true;
             document.getElementById('start-screen').style.display = 'none';
             document.getElementById('game-over-screen').style.display = 'none';
             document.getElementById('victory-screen').style.display = 'none';
+            
             AudioEngine.init();
             game.lastTime = performance.now();
             requestAnimationFrame(loop);
@@ -728,8 +784,11 @@ De missie is klaar, Sint gaat er tussenuit.
 
         function endGame(victory) {
             game.active = false;
-            if(victory) document.getElementById('victory-screen').style.display = 'flex';
-            else document.getElementById('game-over-screen').style.display = 'flex';
+            if(victory) {
+                document.getElementById('victory-screen').style.display = 'flex';
+            } else {
+                document.getElementById('game-over-screen').style.display = 'flex';
+            }
         }
 
         function goToMenu() {
@@ -784,7 +843,6 @@ De missie is klaar, Sint gaat er tussenuit.
         function drawTrajectory() {
             if(!game.active || !game.dirk || !game.dirk.canShoot) return;
             // Alleen tekenen als we aan het richten zijn OF op desktop
-            // Op mobile is mouse.x alleen geldig tijdens touch
             if (!isAiming && 'ontouchstart' in window) return;
 
             let startX = game.dirk.x;
@@ -849,7 +907,6 @@ De missie is klaar, Sint gaat er tussenuit.
             requestAnimationFrame(loop);
         }
 
-        // --- ROBUST INPUT HANDLING ---
         function updateAim(x, y) {
             mouse.x = x;
             mouse.y = y;
@@ -857,7 +914,7 @@ De missie is klaar, Sint gaat er tussenuit.
 
         function fire() {
             if(!game.active) return;
-            if(!game.dirk || !game.dirk.canShoot) return;
+            if(!game.dirk.canShoot) return;
             
             let startX = game.dirk.x;
             let startY = game.dirk.y - 15;
@@ -874,52 +931,65 @@ De missie is klaar, Sint gaat er tussenuit.
             game.dirk.say(dirkQuotes[Math.floor(Math.random() * dirkQuotes.length)]);
         }
 
-        // Input Isolation Logic: Only listen to canvas for game, everything else for UI
-        const gameCanvas = document.getElementById('gameCanvas');
-
-        // Mouse (Desktop)
-        gameCanvas.addEventListener('mousedown', e => {
-            isAiming = true;
+        // --- INPUTS ---
+        
+        // Mouse (PC)
+        document.addEventListener('mousedown', (e) => {
+            if (e.target.closest('button')) return; 
+            
             updateAim(e.clientX, e.clientY);
+            isAiming = true;
         });
+
         window.addEventListener('mousemove', e => {
-            if(isAiming) updateAim(e.clientX, e.clientY);
+            if (isAiming) updateAim(e.clientX, e.clientY);
         });
+
         window.addEventListener('mouseup', e => {
-            if(isAiming) {
+            if (isAiming) {
                 isAiming = false;
                 fire();
             }
         });
 
         // Touch (Mobile)
-        gameCanvas.addEventListener('touchstart', e => {
-            e.preventDefault(); // Prevent scrolling on canvas
-            isAiming = true;
+        document.addEventListener('touchstart', e => {
+            if (e.target.closest('.poem-scroll-container')) return;
+            if (e.target.closest('button')) return; 
+
+            e.preventDefault(); 
             updateAim(e.touches[0].clientX, e.touches[0].clientY);
+            isAiming = true;
         }, {passive: false});
 
-        window.addEventListener('touchmove', e => {
-            if(isAiming) {
-                // Prevent scrolling if aiming
-                if (e.target === gameCanvas) e.preventDefault();
-                updateAim(e.touches[0].clientX, e.touches[0].clientY);
-            }
+        document.addEventListener('touchmove', e => {
+            if (e.target.closest('.poem-scroll-container')) return;
+            if (e.target.closest('button')) return; 
+
+            e.preventDefault();
+            if (isAiming) updateAim(e.touches[0].clientX, e.touches[0].clientY);
         }, {passive: false});
 
-        window.addEventListener('touchend', e => {
-            if(isAiming) {
+        document.addEventListener('touchend', e => {
+            if (e.target.closest('.poem-scroll-container')) return;
+            if (e.target.closest('button')) return; 
+
+            if (isAiming) {
+                fire(); 
                 isAiming = false;
-                fire();
             }
         });
 
-        // Buttons
+        // Init Calls with Modes
         document.getElementById('btn-start').addEventListener('click', () => initGame('normal'));
         document.getElementById('btn-pussy').addEventListener('click', () => initGame('pussy'));
         document.getElementById('btn-extreme').addEventListener('click', () => initGame('extreme'));
+        
         document.getElementById('btn-restart').addEventListener('click', () => initGame(lastPlayedMode));
         document.getElementById('btn-victory').addEventListener('click', () => initGame(lastPlayedMode));
+
+        // Menu buttons
+        document.getElementById('btn-ingame-menu').addEventListener('click', goToMenu);
         document.getElementById('btn-menu-fail').addEventListener('click', goToMenu);
         document.getElementById('btn-menu-win').addEventListener('click', goToMenu);
 
